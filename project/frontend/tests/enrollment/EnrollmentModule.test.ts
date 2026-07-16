@@ -9,22 +9,18 @@ describe('EnrollmentModule', () => {
 
   // ── Test 1: Standalone mode shows student and course selectors ─────
 
-  it('renders student and course selector in standalone mode', () => {
+  it('renders course selector in standalone mode', () => {
     const wrapper = mount(EnrollmentModule, {
-      props: { selection: null },
+      props: { selection: null, studentId: 'S001' },
     })
 
-    // The component should have select elements
+    // The component should have one select element (course only, student from prop)
     const selects = wrapper.findAll('select')
-    expect(selects.length).toBeGreaterThanOrEqual(2)
+    expect(selects.length).toBe(1)
 
-    // Student selector should have S001, S002, S003 options
-    const studentSelect = selects[0]
-    const options = studentSelect.findAll('option')
-    const optionValues = options.map(o => o.attributes('value'))
-    expect(optionValues).toContain('S001')
-    expect(optionValues).toContain('S002')
-    expect(optionValues).toContain('S003')
+    // Current student should be displayed
+    expect(wrapper.text()).toContain('当前学生')
+    expect(wrapper.text()).toContain('S001')
   })
 
   // ── Test 2: Receives CourseSelectedEvent and displays info ─────────

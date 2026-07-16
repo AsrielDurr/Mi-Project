@@ -262,6 +262,7 @@ components:
       required: [course_id, score, reason, uncertainty]
       properties:
         course_id: {type: string, minLength: 1}
+        course_name: {type: string}
         score: {type: integer, minimum: 0, maximum: 100}
         reason: {type: string, minLength: 1}
         uncertainty: {type: string}
@@ -320,6 +321,7 @@ components:
         trace_id: {type: string, minLength: 1}
         student_id: {type: string, minLength: 1}
         course_id: {type: string, minLength: 1}
+        course_name: {type: string}
         rule_decision:
           type: string
           enum: [PASS, BLOCK]

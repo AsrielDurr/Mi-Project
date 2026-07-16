@@ -95,12 +95,12 @@ class Course(StrictModel):
 
 class StudentProfile(StrictModel):
     student_id: str
-    name: str = ""
     goal: str
     skills: list[str] = Field(default_factory=list)
     available_times: list[str] = Field(default_factory=list)
     completed_course_ids: list[str] = Field(default_factory=list)
     enrolled_course_ids: list[str] = Field(default_factory=list)
+    name: str = ""
 
 
 class RecommendationSource(StrEnum):

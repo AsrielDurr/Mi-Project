@@ -1,12 +1,20 @@
 from __future__ import annotations
 
+import os
+from unittest.mock import patch
+
 from fastapi.testclient import TestClient
 
 from app.modules.recommendation.demo import create_demo_app
 
 
 def test_recommend_api_matches_frozen_shape_in_fallback_mode() -> None:
-    with TestClient(create_demo_app()) as client:
+    with patch.dict(os.environ, {}, clear=False) as env:
+        env.pop("MIMO_API_KEY", None)
+        env.pop("MIMO_BASE_URL", None)
+        env.pop("MIMO_MODEL", None)
+        app = create_demo_app()
+    with TestClient(app) as client:
         response = client.post(
             "/api/recommend",
             json={
