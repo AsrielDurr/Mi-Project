@@ -150,7 +150,9 @@ class RecommendationService:
             matched = any(word.lower() in course.name.lower() for word in preferred)
             return (80 if matched else 50, "匹配学习目标" if matched else "课程目录基础推荐")
 
-        ranked = sorted(courses, key=lambda course: score(course)[0], reverse=True)[:3]
+        already_taken = set(student.completed_course_ids) | set(student.enrolled_course_ids)
+        candidates = [course for course in courses if course.course_id not in already_taken]
+        ranked = sorted(candidates, key=lambda course: score(course)[0], reverse=True)[:3]
         return [
             Recommendation(
                 course_id=course.course_id,

@@ -25,12 +25,25 @@ class EnrollmentService:
         self._engine = eligibility if eligibility is not None else RuleEngine(state=state)
 
     def enroll(self, student_id: str, course_id: str, recommendation_trace_id: str | None = None) -> dict:
-        trace_id = self._trace.create(
-            event_type="ENROLLMENT_REQUESTED",
-            actor="STUDENT",
-            payload={"student_id": student_id, "course_id": course_id,
-                     "recommendation_trace_id": recommendation_trace_id},
-        )
+        request_payload = {
+            "student_id": student_id,
+            "course_id": course_id,
+            "recommendation_trace_id": recommendation_trace_id,
+        }
+        if recommendation_trace_id:
+            trace_id = recommendation_trace_id
+            self._trace.append(
+                trace_id=trace_id,
+                event_type="ENROLLMENT_REQUESTED",
+                actor="STUDENT",
+                payload=request_payload,
+            )
+        else:
+            trace_id = self._trace.create(
+                event_type="ENROLLMENT_REQUESTED",
+                actor="STUDENT",
+                payload=request_payload,
+            )
 
         eligibility = self._engine.evaluate(student_id, course_id)
         course = self._state.get_course(course_id)
@@ -110,7 +123,6 @@ class EnrollmentService:
             "status": status,
             "waitlist_position": waitlist_position,
             "checks": checks,
-            "recommendation_trace_id": recommendation_trace_id,
         }
 
     def get_student_status(self, student_id: str, all_course_ids: list[str] | None = None) -> dict:

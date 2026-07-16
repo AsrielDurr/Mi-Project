@@ -105,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 
 // ── Props (integration mode) ──────────────────────────────────────
 
@@ -124,6 +124,7 @@ interface EnrollmentDecidedEvent {
 
 const props = defineProps<{
   selection?: CourseSelectedEvent | null
+  apiBase?: string
 }>()
 
 const emit = defineEmits<{
@@ -143,7 +144,7 @@ const decision = ref<any>(null)
 const studentIds = ['S001', 'S002', 'S003']
 const courseIds = ['CS101', 'AI201', 'DB202', 'ML301', 'WEB201']
 
-const API_BASE = 'http://localhost:8102'
+const API_BASE = () => (props.apiBase ?? import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000').replace(/\/$/, '')
 
 // ── Integration mode watcher ───────────────────────────────────────
 
@@ -152,18 +153,11 @@ watch(
   (sel) => {
     if (sel) {
       mode.value = 'integration'
-      submitEnrollmentForStudent(sel.studentId, sel.courseId)
+      submitEnrollmentForStudent(sel.studentId, sel.courseId, sel.recommendationTraceId)
     }
   },
   { immediate: true }
 )
-
-onMounted(() => {
-  if (props.selection) {
-    mode.value = 'integration'
-    submitEnrollmentForStudent(props.selection.studentId, props.selection.courseId)
-  }
-})
 
 // ── Methods ────────────────────────────────────────────────────────
 
@@ -177,24 +171,25 @@ async function submitEnrollment() {
   await submitEnrollmentForStudent(selectedStudentId.value, selectedCourseId.value)
 }
 
-async function submitEnrollmentForStudent(studentId: string, courseId: string) {
+async function submitEnrollmentForStudent(studentId: string, courseId: string, recommendationTraceId?: string) {
   loading.value = true
   error.value = ''
   decision.value = null
 
   try {
-    const resp = await fetch(`${API_BASE}/api/enroll`, {
+    const resp = await fetch(`${API_BASE()}/api/enroll`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         student_id: studentId,
         course_id: courseId,
+        recommendation_trace_id: recommendationTraceId || null,
       }),
     })
 
     if (!resp.ok) {
       const errData = await resp.json().catch(() => ({}))
-      const msg = errData?.error?.message || `HTTP ${resp.status}`
+      const msg = errData?.error?.message || errData?.detail || `HTTP ${resp.status}`
       error.value = `选课失败: ${msg}`
       loading.value = false
       return
