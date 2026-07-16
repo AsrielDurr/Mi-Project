@@ -2,7 +2,37 @@ from __future__ import annotations
 
 from typing import Any, Protocol, runtime_checkable
 
-from .models import Course, EligibilityResult, StudentProfile, TraceEvent, WaitlistEntry
+from .models import (
+    Course,
+    EligibilityResult,
+    EnrollmentStatus,
+    RuleCheckResult,
+    RuleDecision,
+    RuleName,
+    Schedule,
+    StudentProfile,
+    TraceEvent,
+    WaitlistEntry,
+    WaitlistStatus,
+)
+
+__all__ = [
+    "CatalogPort",
+    "Course",
+    "EligibilityPort",
+    "EligibilityResult",
+    "EnrollmentStatus",
+    "RuleCheckResult",
+    "RuleDecision",
+    "RuleName",
+    "Schedule",
+    "StatePort",
+    "StudentProfile",
+    "TraceEvent",
+    "TracePort",
+    "WaitlistEntry",
+    "WaitlistStatus",
+]
 
 
 @runtime_checkable
@@ -24,6 +54,8 @@ class StatePort(Protocol):
 
     def list_waitlist(self, course_id: str) -> list[WaitlistEntry]: ...
 
+    def is_waitlisted(self, student_id: str, course_id: str) -> bool: ...
+
     def release_seat(self, course_id: str) -> None: ...
 
 
@@ -36,8 +68,19 @@ class EligibilityPort(Protocol):
 
 @runtime_checkable
 class TracePort(Protocol):
-    def create(self, event_type: str, payload: dict[str, Any]) -> str: ...
+    def create(
+        self,
+        event_type: str,
+        payload: dict[str, Any],
+        actor: Any = "SYSTEM",
+    ) -> str: ...
 
-    def append(self, trace_id: str, event_type: str, payload: dict[str, Any]) -> None: ...
+    def append(
+        self,
+        trace_id: str,
+        event_type: str,
+        payload: dict[str, Any],
+        actor: Any = "SYSTEM",
+    ) -> None: ...
 
     def get(self, trace_id: str) -> list[TraceEvent]: ...

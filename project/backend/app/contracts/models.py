@@ -9,6 +9,18 @@ from pydantic import BaseModel, ConfigDict, Field
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    def __init__(self, *args: Any, **data: Any) -> None:
+        """Accept legacy positional construction while keeping API validation strict."""
+        if args:
+            field_names = list(type(self).model_fields)
+            if len(args) > len(field_names):
+                raise TypeError(f"too many positional arguments for {type(self).__name__}")
+            for name, value in zip(field_names, args):
+                if name in data:
+                    raise TypeError(f"multiple values for field {name}")
+                data[name] = value
+        super().__init__(**data)
+
 
 class Weekday(StrEnum):
     MON = "MON"
@@ -29,6 +41,23 @@ class WaitlistStatus(StrEnum):
     WAITING = "WAITING"
     PROMOTED = "PROMOTED"
     SKIPPED = "SKIPPED"
+
+
+class RuleDecision(StrEnum):
+    PASS = "PASS"
+    BLOCK = "BLOCK"
+
+
+class EnrollmentStatus(StrEnum):
+    ENROLLED = "ENROLLED"
+    WAITLISTED = "WAITLISTED"
+    REJECTED = "REJECTED"
+
+
+class RuleName(StrEnum):
+    DUPLICATE = "DUPLICATE"
+    PREREQUISITE = "PREREQUISITE"
+    TIME_CONFLICT = "TIME_CONFLICT"
 
 
 class ActorType(StrEnum):
@@ -80,9 +109,53 @@ class CourseStatusResponse(StrictModel):
     waitlist: list[WaitlistEntry]
 
 
-class EligibilityResult(StrictModel):
-    allowed: bool
+class RuleCheckResult(StrictModel):
+    rule: RuleName
+    passed: bool
     reason: str
+    related_course_id: str | None = None
+
+
+class EligibilityResult(StrictModel):
+    rule_decision: RuleDecision
+    checks: list[RuleCheckResult]
+
+    @property
+    def allowed(self) -> bool:
+        return self.rule_decision == RuleDecision.PASS
+
+    @property
+    def reason(self) -> str:
+        failed = next((check for check in self.checks if not check.passed), None)
+        return failed.reason if failed else "资格有效并成功补入"
+
+
+class EnrollmentRequest(StrictModel):
+    student_id: str
+    course_id: str
+    recommendation_trace_id: str | None = None
+
+
+class EnrollmentDecision(StrictModel):
+    trace_id: str
+    student_id: str
+    course_id: str
+    rule_decision: RuleDecision
+    capacity_available: bool
+    status: EnrollmentStatus
+    waitlist_position: int | None = Field(default=None, ge=1)
+    checks: list[RuleCheckResult]
+
+
+class EnrollmentSummary(StrictModel):
+    course_id: str
+    status: EnrollmentStatus
+
+
+class StudentStatusResponse(StrictModel):
+    student_id: str
+    enrollments: list[EnrollmentSummary]
+    waitlist_entries: list[WaitlistEntry]
 
 
 class ReleaseSeatResponse(StrictModel):

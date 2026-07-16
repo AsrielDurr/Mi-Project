@@ -197,6 +197,13 @@ class InMemoryStore:
             )
         ]
 
+    def is_waitlisted(self, student_id: str, course_id: str) -> bool:
+        return any(
+            entry.student_id == student_id
+            and entry.status == WaitlistStatus.WAITING
+            for entry in self._waitlists.get(course_id, [])
+        )
+
     def release_seat(self, course_id: str) -> None:
         course = self._courses.get(course_id)
         if course is None:
