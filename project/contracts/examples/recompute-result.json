@@ -1,0 +1,19 @@
+{
+  "trace_id": "trace-recompute-001",
+  "course_id": "C003",
+  "available_seats_before": 1,
+  "checked": [
+    {
+      "student_id": "S001",
+      "waitlist_status": "SKIPPED",
+      "reason": "与C002上课时间冲突"
+    },
+    {
+      "student_id": "S002",
+      "waitlist_status": "PROMOTED",
+      "reason": "资格有效并成功补入"
+    }
+  ],
+  "promoted_student_ids": ["S002"]
+}
+
