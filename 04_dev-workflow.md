@@ -543,14 +543,14 @@ npm --prefix frontend run test -- waitlist
 
 ### C6：M3独立完成门禁
 
-- [ ] Store、候补、追溯和接口测试全部通过。
-- [ ] 前端候补测试全部通过。
-- [ ] 8103端口可独立演示释放名额和重算。
-- [ ] 第一名跳过后继续检查下一名。
-- [ ] 课程人数、已选记录和候补状态一致。
-- [ ] reset不修改种子JSON。
-- [ ] M3实现冻结的`CatalogPort + StatePort + TracePort`。
-- [ ] M3只依赖`EligibilityPort`，没有复制M2规则。
+- [x] Store、候补、追溯和接口测试全部通过。
+- [x] 前端候补测试全部通过。
+- [x] 8103端口可独立演示释放名额和重算。
+- [x] 第一名跳过后继续检查下一名。
+- [x] 课程人数、已选记录和候补状态一致。
+- [x] reset不修改种子JSON。
+- [x] M3实现冻结的`CatalogPort + StatePort + TracePort`。
+- [x] M3只依赖`EligibilityPort`，没有复制M2规则。
 
 ## 10. 三模块依赖图
 
@@ -752,8 +752,8 @@ npm --prefix frontend run build
 | M1 | Green | M1前后端测试与独立Demo | 推荐、校验、fallback和UI通过 | 待执行 | 待执行 | — |
 | M2 | Red | M2前后端测试 | 因规则/选课模块缺失而失败 | 待执行 | 待执行 | — |
 | M2 | Green | M2前后端测试与独立Demo | 规则、状态和UI通过 | 待执行 | 待执行 | — |
-| M3 | Red | M3前后端测试 | 因Store/候补模块缺失而失败 | 待执行 | 待执行 | — |
-| M3 | Green | M3前后端测试与独立Demo | Store、候补、追溯和UI通过 | 待执行 | 待执行 | — |
+| M3 | Red | `pytest`与`vitest`候补测试 | 因Store/候补组件尚不存在而失败 | 后端2个收集错误；前端2个测试文件导入失败 | 已完成 | `ModuleNotFoundError: app`；两个Vue组件不存在 |
+| M3 | Green | 后端全测、前端候补测试、build、8103 HTTP冒烟 | Store、候补、追溯和UI通过 | 后端14项、前端4项通过；冻结OpenAPI响应校验通过；build成功；S002跳过、S005补入 | 已完成 | 2026-07-16，详见`project/M3_WAITLIST_MODULE.md` |
 | 集成 | Verify | 后端全测、前端全测、build、V1—V4 | 三模块真实接线后全部通过 | 待执行 | 待执行 | — |
 
 ## 17. 集成完成门禁
