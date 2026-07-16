@@ -35,7 +35,7 @@ class MiMoClient:
         return cls(
             api_key=os.getenv("MIMO_API_KEY", ""),
             base_url=os.getenv("MIMO_BASE_URL", "https://api.xiaomimimo.com/v1"),
-            model=os.getenv("MIMO_MODEL", "mimo-v2-flash"),
+            model=os.getenv("MIMO_MODEL", "mimo-v2.5-pro"),
             timeout_seconds=float(os.getenv("MIMO_TIMEOUT_SECONDS", "10")),
         )
 
