@@ -1,0 +1,15 @@
+{
+  "trace_id": "trace-enroll-002",
+  "student_id": "S001",
+  "course_id": "C003",
+  "rule_decision": "PASS",
+  "capacity_available": false,
+  "status": "WAITLISTED",
+  "waitlist_position": 1,
+  "checks": [
+    {"rule": "DUPLICATE", "passed": true, "reason": "未重复选课", "related_course_id": null},
+    {"rule": "PREREQUISITE", "passed": true, "reason": "已满足先修要求", "related_course_id": null},
+    {"rule": "TIME_CONFLICT", "passed": true, "reason": "无时间冲突", "related_course_id": null}
+  ]
+}
+

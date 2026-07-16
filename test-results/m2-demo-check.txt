@@ -1,0 +1,42 @@
+============================================================
+  M2 Demo 验证 — 5 个场景
+  时间: 2026-07-16 13:32:36
+============================================================
+
+场景1: 重复选课 → 预期 BLOCK / REJECTED
+请求: S001 → CS101 (S001已选CS101)
+---
+{"trace_id":"trace-001","student_id":"S001","course_id":"CS101","rule_decision":"BLOCK","capacity_available":true,"status":"REJECTED","waitlist_position":null,"checks":[{"rule":"DUPLICATE","passed":false,"reason":"已选过课程 CS101","related_course_id":"CS101"},{"rule":"PREREQUISITE","passed":true,"reason":"该课程无先修要求","related_course_id":null},{"rule":"TIME_CONFLICT","passed":false,"reason":"与 CS101 上课时间冲突","related_course_id":"CS101"}]}
+状态验证: 检查 rule_decision=BLOCK, status=REJECTED
+
+============================================================
+场景2: 缺少先修 → 预期 BLOCK / REJECTED
+请求: S002 → ML301 (ML301需要AI201, S002未完成)
+---
+{"trace_id":"trace-002","student_id":"S002","course_id":"ML301","rule_decision":"BLOCK","capacity_available":true,"status":"REJECTED","waitlist_position":null,"checks":[{"rule":"DUPLICATE","passed":true,"reason":"未重复选课","related_course_id":null},{"rule":"PREREQUISITE","passed":false,"reason":"缺少先修课程: AI201","related_course_id":"AI201"},{"rule":"TIME_CONFLICT","passed":true,"reason":"无时间冲突","related_course_id":null}]}
+状态验证: 检查 PREREQUISITE.passed=false, related_course_id=AI201
+
+============================================================
+场景3: 时间冲突 → 预期 BLOCK / REJECTED
+请求: S001 → DB202 (DB202与CS101同为MON 08:00-10:00)
+---
+{"trace_id":"trace-003","student_id":"S001","course_id":"DB202","rule_decision":"BLOCK","capacity_available":true,"status":"REJECTED","waitlist_position":null,"checks":[{"rule":"DUPLICATE","passed":true,"reason":"未重复选课","related_course_id":null},{"rule":"PREREQUISITE","passed":true,"reason":"该课程无先修要求","related_course_id":null},{"rule":"TIME_CONFLICT","passed":false,"reason":"与 CS101 上课时间冲突","related_course_id":"CS101"}]}
+状态验证: 检查 TIME_CONFLICT.passed=false, related_course_id=CS101
+
+============================================================
+场景4: 有容量选课成功 → 预期 PASS / ENROLLED
+请求: S001 → WEB201 (容量40, 已选26, 剩余14)
+---
+{"trace_id":"trace-004","student_id":"S001","course_id":"WEB201","rule_decision":"PASS","capacity_available":true,"status":"ENROLLED","waitlist_position":null,"checks":[{"rule":"DUPLICATE","passed":true,"reason":"未重复选课","related_course_id":null},{"rule":"PREREQUISITE","passed":true,"reason":"已满足先修要求","related_course_id":null},{"rule":"TIME_CONFLICT","passed":true,"reason":"无时间冲突","related_course_id":null}]}
+状态验证: 检查 rule_decision=PASS, status=ENROLLED, capacity_available=true
+
+============================================================
+场景5: 满员进入候补 → 预期 PASS / WAITLISTED
+请求: S001 → AI201 (容量30, 已选30, 满员)
+---
+{"trace_id":"trace-005","student_id":"S001","course_id":"AI201","rule_decision":"PASS","capacity_available":false,"status":"WAITLISTED","waitlist_position":3,"checks":[{"rule":"DUPLICATE","passed":true,"reason":"未重复选课","related_course_id":null},{"rule":"PREREQUISITE","passed":true,"reason":"已满足先修要求","related_course_id":null},{"rule":"TIME_CONFLICT","passed":true,"reason":"无时间冲突","related_course_id":null}]}
+状态验证: 检查 rule_decision=PASS (不是BLOCK!), status=WAITLISTED, waitlist_position>0
+
+============================================================
+  Demo 验证完成
+============================================================

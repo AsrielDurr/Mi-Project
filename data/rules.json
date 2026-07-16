@@ -1,0 +1,7 @@
+{
+  "maxCredits": 24,
+  "allowWaitlist": true,
+  "checkTimeConflict": true,
+  "checkPrerequisite": true,
+  "checkCapacity": true
+}

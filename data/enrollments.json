@@ -1,0 +1,17 @@
+[
+  {
+    "studentId": "S001",
+    "courseId": "DB202",
+    "status": "ENROLLED"
+  },
+  {
+    "studentId": "S002",
+    "courseId": "AI201",
+    "status": "WAITING"
+  },
+  {
+    "studentId": "S003",
+    "courseId": "ALG201",
+    "status": "WAITING"
+  }
+]

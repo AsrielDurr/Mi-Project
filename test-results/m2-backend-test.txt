@@ -1,0 +1,38 @@
+============================= test session starts =============================
+platform win32 -- Python 3.9.13, pytest-8.4.2, pluggy-1.6.0 -- D:\Anaconda\python.exe
+cachedir: .pytest_cache
+rootdir: D:\mimo\Day5-6
+plugins: anyio-4.12.1
+collecting ... collected 29 items
+
+backend/tests/enrollment/test_api.py::TestPostEnroll::test_enroll_success_returns_200 PASSED [  3%]
+backend/tests/enrollment/test_api.py::TestPostEnroll::test_enroll_response_matches_enrolled_example PASSED [  6%]
+backend/tests/enrollment/test_api.py::TestPostEnroll::test_enroll_duplicate_returns_rejected PASSED [ 10%]
+backend/tests/enrollment/test_api.py::TestPostEnroll::test_enroll_missing_student_returns_404 PASSED [ 13%]
+backend/tests/enrollment/test_api.py::TestPostEnroll::test_enroll_missing_course_returns_404 PASSED [ 17%]
+backend/tests/enrollment/test_api.py::TestGetStudentStatus::test_student_status_returns_200 PASSED [ 20%]
+backend/tests/enrollment/test_api.py::TestGetStudentStatus::test_student_status_matches_openapi_schema PASSED [ 24%]
+backend/tests/enrollment/test_api.py::TestGetStudentStatus::test_student_not_found_returns_404 PASSED [ 27%]
+backend/tests/enrollment/test_api.py::TestTraceIdInResponse::test_enroll_response_includes_trace_id PASSED [ 31%]
+backend/tests/enrollment/test_rule_engine.py::TestRuleEngineDuplicate::test_duplicate_enrollment_returns_block PASSED [ 34%]
+backend/tests/enrollment/test_rule_engine.py::TestRuleEngineDuplicate::test_duplicate_enrollment_not_already_enrolled_passes PASSED [ 37%]
+backend/tests/enrollment/test_rule_engine.py::TestRuleEnginePrerequisite::test_missing_prerequisite_returns_block PASSED [ 41%]
+backend/tests/enrollment/test_rule_engine.py::TestRuleEnginePrerequisite::test_satisfied_prerequisite_passes PASSED [ 44%]
+backend/tests/enrollment/test_rule_engine.py::TestRuleEnginePrerequisite::test_no_prerequisites_passes PASSED [ 48%]
+backend/tests/enrollment/test_rule_engine.py::TestRuleEngineTimeConflict::test_time_conflict_returns_block PASSED [ 51%]
+backend/tests/enrollment/test_rule_engine.py::TestRuleEngineTimeConflict::test_no_time_conflict_passes PASSED [ 55%]
+backend/tests/enrollment/test_rule_engine.py::TestRuleEngineTimeConflict::test_no_enrolled_courses_no_conflict PASSED [ 58%]
+backend/tests/enrollment/test_rule_engine.py::TestRuleEngineDeterminism::test_same_input_same_result PASSED [ 62%]
+backend/tests/enrollment/test_rule_engine.py::TestRuleEngineNoStateMutation::test_rule_engine_does_not_call_save PASSED [ 65%]
+backend/tests/enrollment/test_rule_engine.py::TestRuleEngineCheckOrder::test_checks_are_in_fixed_order PASSED [ 68%]
+backend/tests/enrollment/test_service.py::TestEnrollmentServiceRejected::test_block_returns_rejected PASSED [ 72%]
+backend/tests/enrollment/test_service.py::TestEnrollmentServiceRejected::test_block_does_not_call_save_enrolled PASSED [ 75%]
+backend/tests/enrollment/test_service.py::TestEnrollmentServiceEnrolled::test_pass_with_capacity_returns_enrolled PASSED [ 79%]
+backend/tests/enrollment/test_service.py::TestEnrollmentServiceEnrolled::test_pass_with_capacity_calls_save_enrolled PASSED [ 82%]
+backend/tests/enrollment/test_service.py::TestEnrollmentServiceWaitlisted::test_pass_with_full_capacity_returns_waitlisted PASSED [ 86%]
+backend/tests/enrollment/test_service.py::TestEnrollmentServiceWaitlisted::test_pass_with_full_capacity_calls_save_waitlisted PASSED [ 89%]
+backend/tests/enrollment/test_service.py::TestEnrollmentServiceDuplicateWaitlist::test_duplicate_waitlist_no_second_record PASSED [ 93%]
+backend/tests/enrollment/test_service.py::TestEnrollmentServiceTrace::test_trace_saves_checks_and_final_status PASSED [ 96%]
+backend/tests/enrollment/test_service.py::TestEnrollmentServiceResponseShape::test_response_matches_enrollment_decision_schema PASSED [100%]
+
+============================= 29 passed in 0.98s ==============================
