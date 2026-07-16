@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 import TraceTimeline from "./TraceTimeline.vue";
 import type {
@@ -30,6 +30,14 @@ const error = ref("");
 const message = ref("");
 
 
+const waitingEntries = computed(() =>
+  courseStatus.value?.waitlist.filter((entry) => entry.status === "WAITING") ?? [],
+);
+const processedEntries = computed(() =>
+  courseStatus.value?.waitlist.filter((entry) => entry.status !== "WAITING") ?? [],
+);
+
+
 const waitlistLabels: Record<WaitlistStatus, string> = {
   WAITING: "等待中",
   PROMOTED: "已补入",
@@ -54,7 +62,9 @@ async function runAction(action: () => Promise<void>): Promise<void> {
   try {
     await action();
   } catch (caught) {
-    error.value = caught instanceof Error ? caught.message : "操作失败";
+    error.value = caught instanceof TypeError
+      ? "无法连接选课服务，请确认后端已在8000端口启动"
+      : caught instanceof Error ? caught.message : "操作失败";
   } finally {
     loading.value = false;
   }
@@ -96,16 +106,24 @@ async function reset(): Promise<void> {
 }
 
 
-onMounted(() => {
-  void runAction(loadStatus);
-});
+watch(
+  () => props.courseId,
+  () => {
+    courseStatus.value = null;
+    recomputeResult.value = null;
+    traceEvents.value = [];
+    message.value = "";
+    void runAction(loadStatus);
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
   <main class="waitlist-module">
     <header>
       <div>
-        <p class="eyebrow">M3 · 候补重算与追溯</p>
+        <p class="eyebrow">候补重算与决策追溯</p>
         <h1>{{ courseStatus?.course.name ?? courseId }}</h1>
       </div>
       <button data-test="reset" class="secondary" :disabled="loading" @click="reset">
@@ -128,8 +146,12 @@ onMounted(() => {
         <strong>{{ courseStatus.available_seats }}</strong>
       </div>
       <div>
-        <span>候补人数</span>
-        <strong>{{ courseStatus.waitlist.length }}</strong>
+        <span>等待候补</span>
+        <strong data-test="waiting-count">{{ waitingEntries.length }}</strong>
+      </div>
+      <div>
+        <span>已处理</span>
+        <strong data-test="processed-count">{{ processedEntries.length }}</strong>
       </div>
     </section>
 
@@ -137,7 +159,7 @@ onMounted(() => {
       <div class="section-heading">
         <div>
           <p class="eyebrow">原始申请顺序保持不变</p>
-          <h2 id="waitlist-title">候补名单</h2>
+          <h2 id="waitlist-title">当前等待候补</h2>
         </div>
         <div class="actions">
           <button
@@ -159,7 +181,9 @@ onMounted(() => {
         </div>
       </div>
 
-      <table>
+
+      <p v-if="waitingEntries.length === 0" class="empty">当前没有等待中的候补申请</p>
+      <table v-else data-test="waiting-list">
         <thead>
           <tr>
             <th>排名</th>
@@ -170,7 +194,43 @@ onMounted(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="entry in courseStatus.waitlist" :key="entry.student_id">
+          <tr v-for="entry in waitingEntries" :key="entry.student_id">
+            <td>#{{ entry.position }}</td>
+            <td>{{ entry.student_id }}</td>
+            <td>{{ new Date(entry.applied_at).toLocaleString("zh-CN") }}</td>
+            <td>
+              <span class="status" :data-status="entry.status">
+                {{ waitlistLabels[entry.status] }}
+              </span>
+            </td>
+            <td>{{ entry.last_check_reason ?? "—" }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section
+      v-if="courseStatus && processedEntries.length"
+      class="panel"
+      aria-labelledby="processed-title"
+      data-test="processed-history"
+    >
+      <div>
+        <p class="eyebrow">保留补入与跳过结果</p>
+        <h2 id="processed-title">已处理记录</h2>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>原排名</th>
+            <th>学生</th>
+            <th>申请时间</th>
+            <th>状态</th>
+            <th>处理原因</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="entry in processedEntries" :key="entry.student_id">
             <td>#{{ entry.position }}</td>
             <td>{{ entry.student_id }}</td>
             <td>{{ new Date(entry.applied_at).toLocaleString("zh-CN") }}</td>
@@ -251,7 +311,7 @@ h1 {
 
 .overview {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin: 24px 0;
 }
@@ -269,6 +329,7 @@ h1 {
   margin-bottom: 8px;
   color: #667085;
 }
+
 
 .overview strong {
   font-size: 1.5rem;
@@ -367,6 +428,12 @@ th {
   border-radius: 10px;
 }
 
+.empty {
+  margin: 18px 0 0;
+  color: #667085;
+}
+
+
 .error {
   color: #b42318;
   background: #fee4e2;
@@ -402,4 +469,5 @@ th {
   }
 }
 </style>
+
 

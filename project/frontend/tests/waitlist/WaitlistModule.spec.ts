@@ -2,10 +2,13 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
 import WaitlistModule from "../../src/modules/waitlist/WaitlistModule.vue";
-import type { WaitlistApi } from "../../src/modules/waitlist/types";
+import type {
+  CourseStatusResponse,
+  WaitlistApi,
+} from "../../src/modules/waitlist/types";
 
 
-const courseStatus = {
+const courseStatus: CourseStatusResponse = {
   course: {
     course_id: "AI201",
     name: "人工智能基础",
@@ -36,7 +39,7 @@ const courseStatus = {
       last_check_reason: null,
     },
   ],
-} as const;
+};
 
 
 function createApi(): WaitlistApi {
@@ -132,5 +135,49 @@ describe("WaitlistModule", () => {
     expect(wrapper.text()).toContain("S005");
     expect(wrapper.text()).toContain("已补入");
   });
+
+  it("counts only waiting candidates and separates processed history", async () => {
+    const api = createApi();
+    vi.mocked(api.getCourseStatus).mockResolvedValue({
+      ...courseStatus,
+      waitlist: [
+        courseStatus.waitlist[0],
+        { ...courseStatus.waitlist[1], status: "PROMOTED", last_check_reason: "资格有效并成功补入" },
+        {
+          ...courseStatus.waitlist[1],
+          student_id: "S003",
+          position: 3,
+          status: "SKIPPED",
+          last_check_reason: "与已选课程冲突",
+        },
+      ],
+    });
+
+    const wrapper = mount(WaitlistModule, {
+      props: { api, courseId: "AI201" },
+    });
+    await flushPromises();
+
+    expect(wrapper.get('[data-test="waiting-count"]').text()).toBe("1");
+    expect(wrapper.get('[data-test="processed-count"]').text()).toBe("2");
+    expect(wrapper.get('[data-test="waiting-list"]').text()).toContain("S002");
+    expect(wrapper.get('[data-test="waiting-list"]').text()).not.toContain("S005");
+    expect(wrapper.get('[data-test="processed-history"]').text()).toContain("S005");
+    expect(wrapper.get('[data-test="processed-history"]').text()).toContain("S003");
+  });
+
+  it("reloads status when the selected course changes", async () => {
+    const api = createApi();
+    const wrapper = mount(WaitlistModule, {
+      props: { api, courseId: "AI201" },
+    });
+    await flushPromises();
+
+    await wrapper.setProps({ courseId: "ALG201" });
+    await flushPromises();
+
+    expect(api.getCourseStatus).toHaveBeenLastCalledWith("ALG201");
+  });
 });
+
 

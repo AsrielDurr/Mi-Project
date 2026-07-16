@@ -8,11 +8,14 @@ import {
   type CourseSelectedEvent,
 } from "../modules/recommendation";
 import { createWaitlistApi, WaitlistModule } from "../modules/waitlist";
+import { courseCatalog } from "../shared/courseCatalog";
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+const baseUrl = import.meta.env.VITE_API_BASE_URL
+  ?? `${window.location.protocol}//${window.location.hostname}:8000`;
 const recommendationApi = createRecommendationApi(baseUrl);
 const waitlistApi = createWaitlistApi(baseUrl);
 const selection = ref<CourseSelectedEvent | null>(null);
+const teacherCourseId = ref("AI201");
 const route = ref(window.location.pathname === "/teacher" ? "teacher" : "student");
 const title = computed(() => route.value === "teacher" ? "教师候补管理" : "学生选课助手");
 
@@ -39,8 +42,24 @@ function navigate(next: "student" | "teacher"): void {
       />
       <EnrollmentModule :selection="selection" :api-base="baseUrl" />
     </main>
-    <main v-else>
-      <WaitlistModule :api="waitlistApi" course-id="AI201" />
+    <main v-else class="teacher-page">
+      <section class="course-toolbar" aria-label="教师端课程切换">
+        <label for="teacher-course">查看课程</label>
+        <select
+          id="teacher-course"
+          v-model="teacherCourseId"
+          data-test="teacher-course-select"
+        >
+          <option
+            v-for="course in courseCatalog"
+            :key="course.courseId"
+            :value="course.courseId"
+          >
+            {{ course.name }}（{{ course.courseId }}）
+          </option>
+        </select>
+      </section>
+      <WaitlistModule :api="waitlistApi" :course-id="teacherCourseId" />
     </main>
   </div>
 </template>
@@ -55,5 +74,10 @@ nav { display: flex; gap: 8px; }
 nav button { border: 0; padding: 8px 14px; border-radius: 8px; background: #edf0f7; cursor: pointer; }
 nav button.active { background: #2f4ee6; color: #fff; }
 .student-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; padding: 24px; align-items: start; }
+.teacher-page { padding-top: 24px; }
+.course-toolbar { display: flex; align-items: center; gap: 12px; width: min(1080px, calc(100% - 32px)); margin: 0 auto; padding: 16px 20px; border: 1px solid #dfe3eb; border-radius: 14px; background: #fff; font-family: system-ui, sans-serif; }
+.course-toolbar label { font-weight: 700; }
+.course-toolbar select { min-width: 240px; min-height: 40px; padding: 0 12px; border: 1px solid #c8cfdd; border-radius: 9px; color: #172033; background: #fff; font: inherit; }
 @media (max-width: 900px) { .student-grid { grid-template-columns: 1fr; } }
 </style>
+
