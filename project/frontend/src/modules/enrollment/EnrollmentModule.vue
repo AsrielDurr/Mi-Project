@@ -1,84 +1,75 @@
 <template>
-  <div class="enrollment-module">
-    <h2>M2 规则与选课模块</h2>
+  <section class="module">
+    <p class="eyebrow">M2 · 规则与选课</p>
+    <h1>检查资格并提交选课</h1>
 
-    <!-- Standalone mode: manual selection -->
-    <div v-if="mode === 'standalone'" class="standalone-controls">
-      <div class="form-group">
-        <label>学生:</label>
-        <select v-model="selectedStudentId" @change="resetResult">
-          <option value="">-- 选择学生 --</option>
-          <option v-for="sid in studentIds" :key="sid" :value="sid">{{ sid }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>课程:</label>
-        <select v-model="selectedCourseId" @change="resetResult">
-          <option value="">-- 选择课程 --</option>
-          <option v-for="cid in courseIds" :key="cid" :value="cid">{{ cid }}</option>
-        </select>
+    <!-- Standalone mode -->
+    <div v-if="mode === 'standalone'" class="form-card">
+      <p class="current-student">当前学生：<b>{{ currentStudentId() }}</b></p>
+      <div class="form-row">
+        <label>
+          <span>课程</span>
+          <select v-model="selectedCourseId" @change="resetResult">
+            <option value="">-- 选择课程 --</option>
+            <option v-for="c in courseOptions" :key="c.id" :value="c.id">{{ c.id }} {{ c.name }}</option>
+          </select>
+        </label>
       </div>
       <button
-        :disabled="!selectedStudentId || !selectedCourseId || loading"
+        class="primary"
+        :disabled="!selectedCourseId || loading"
         @click="submitEnrollment"
       >
         {{ loading ? '提交中...' : '提交选课' }}
       </button>
     </div>
 
-    <!-- Integration mode: receive CourseSelectedEvent -->
-    <div v-if="mode === 'integration' && selection" class="integration-info">
-      <p>收到选课事件: 学生 {{ selection.studentId }} 选择课程 {{ selection.courseId }}</p>
-      <p v-if="selection.recommendationTraceId">
-        推荐追溯ID: {{ selection.recommendationTraceId }}
-      </p>
+    <!-- Integration mode -->
+    <div v-if="mode === 'integration' && selection" class="banner info">
+      收到选课事件：学生 <b>{{ selection.studentId }}</b> 选择课程 <b>{{ courseName(selection.courseId) }}</b>
+      <span v-if="selection.recommendationTraceId" class="trace-hint">推荐追溯 {{ selection.recommendationTraceId }}</span>
     </div>
 
-    <!-- Error display -->
-    <div v-if="error" class="error-message">
-      {{ error }}
-    </div>
+    <p v-if="error" role="alert" class="error">{{ error }}</p>
+    <p v-if="loading" class="loading-msg">正在检查选课资格...</p>
 
-    <!-- Loading -->
-    <div v-if="loading" class="loading">正在检查选课资格...</div>
-
-    <!-- Result display -->
-    <div v-if="decision" class="decision-result">
+    <!-- Result -->
+    <div v-if="decision" class="result-card">
       <h3>选课结果</h3>
 
-      <div class="summary">
+      <div class="summary-grid">
         <div class="field">
-          <span class="label">学生ID:</span>
-          <span>{{ decision.student_id }}</span>
+          <span class="label">学生</span>
+          <span class="value">{{ decision.student_id }}</span>
         </div>
         <div class="field">
-          <span class="label">课程ID:</span>
-          <span>{{ decision.course_id }}</span>
+          <span class="label">课程</span>
+          <span class="value">{{ decision.course_name || courseName(decision.course_id) }}</span>
         </div>
         <div class="field">
-          <span class="label">规则判定:</span>
-          <span :class="decision.rule_decision === 'PASS' ? 'pass' : 'block'">
+          <span class="label">规则判定</span>
+          <span :class="['value', decision.rule_decision === 'PASS' ? 'text-pass' : 'text-block']">
             {{ decision.rule_decision === 'PASS' ? '通过' : '阻止' }}
           </span>
         </div>
         <div class="field">
-          <span class="label">最终状态:</span>
-          <span :class="`status-${decision.status.toLowerCase()}`">
+          <span class="label">最终状态</span>
+          <span :class="['value', 'status-tag', statusTagClass(decision.status)]">
             {{ statusLabel(decision.status) }}
           </span>
         </div>
         <div v-if="decision.waitlist_position !== null" class="field">
-          <span class="label">候补排名:</span>
-          <span class="waitlist-rank">第 {{ decision.waitlist_position }} 位</span>
+          <span class="label">候补排名</span>
+          <span class="value rank">第 {{ decision.waitlist_position }} 位</span>
         </div>
-        <div class="field">
-          <span class="label">追溯ID:</span>
-          <span class="trace-id">{{ decision.trace_id }}</span>
+        <div class="field full-width">
+          <span class="label">追溯ID</span>
+          <span class="value mono">{{ decision.trace_id }}</span>
         </div>
       </div>
 
       <h4>逐条规则检查</h4>
-      <table class="checks-table">
+      <table>
         <thead>
           <tr>
             <th>规则</th>
@@ -88,26 +79,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr
-            v-for="(check, idx) in decision.checks"
-            :key="idx"
-            :class="check.passed ? 'check-pass' : 'check-fail'"
-          >
-            <td>{{ ruleLabel(check.rule) }}</td>
+          <tr v-for="(check, idx) in decision.checks" :key="idx" :class="check.passed ? 'row-pass' : 'row-fail'">
+            <td><span class="rule-badge" :class="check.passed ? 'badge-pass' : 'badge-fail'">{{ ruleLabel(check.rule) }}</span></td>
             <td>{{ check.passed ? '通过' : '未通过' }}</td>
             <td>{{ check.reason }}</td>
-            <td>{{ check.related_course_id || '-' }}</td>
+            <td>{{ check.related_course_id ? courseName(check.related_course_id) : '—' }}</td>
           </tr>
         </tbody>
       </table>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-
-// ── Props (integration mode) ──────────────────────────────────────
+import { ref, watch, onMounted } from 'vue'
 
 interface CourseSelectedEvent {
   studentId: string
@@ -124,6 +109,7 @@ interface EnrollmentDecidedEvent {
 
 const props = defineProps<{
   selection?: CourseSelectedEvent | null
+  studentId?: string
   apiBase?: string
 }>()
 
@@ -131,79 +117,73 @@ const emit = defineEmits<{
   (e: 'enrollment-decided', event: EnrollmentDecidedEvent): void
 }>()
 
-// ── State ──────────────────────────────────────────────────────────
-
 const mode = ref<'standalone' | 'integration'>('standalone')
-const selectedStudentId = ref('')
 const selectedCourseId = ref('')
 const loading = ref(false)
 const error = ref('')
 const decision = ref<any>(null)
-
-// Fixed demo data matching backend demo
-const studentIds = ['S001', 'S002', 'S003']
-const courseIds = ['CS101', 'AI201', 'DB202', 'ML301', 'WEB201']
+const courseNameMap = ref<Record<string, string>>({})
+const courseOptions = ref<{ id: string; name: string }[]>([])
 
 const API_BASE = () => (props.apiBase ?? import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000').replace(/\/$/, '')
 
-// ── Integration mode watcher ───────────────────────────────────────
+function courseName(courseId: string): string {
+  return courseNameMap.value[courseId] || courseId
+}
 
-watch(
-  () => props.selection,
-  (sel) => {
-    if (sel) {
-      mode.value = 'integration'
-      submitEnrollmentForStudent(sel.studentId, sel.courseId, sel.recommendationTraceId)
+onMounted(async () => {
+  try {
+    const resp = await fetch(`${API_BASE()}/api/courses`)
+    if (resp.ok) {
+      const data: { course_id: string; name: string }[] = await resp.json()
+      courseOptions.value = data.map(c => ({ id: c.course_id, name: c.name }))
+      for (const c of data) courseNameMap.value[c.course_id] = c.name
     }
-  },
-  { immediate: true }
-)
+  } catch { /* fall back to bare IDs */ }
+})
 
-// ── Methods ────────────────────────────────────────────────────────
+watch(() => props.selection, (sel) => {
+  if (sel) {
+    mode.value = 'integration'
+    submitEnrollmentForStudent(sel.studentId, sel.courseId, sel.recommendationTraceId)
+  }
+}, { immediate: true })
 
-function resetResult() {
+watch(() => props.studentId, () => {
   decision.value = null
   error.value = ''
+  selectedCourseId.value = ''
+  mode.value = 'standalone'
+})
+
+function resetResult() { decision.value = null; error.value = '' }
+
+function currentStudentId(): string {
+  return props.studentId || props.selection?.studentId || 'S001'
 }
 
 async function submitEnrollment() {
-  if (!selectedStudentId.value || !selectedCourseId.value) return
-  await submitEnrollmentForStudent(selectedStudentId.value, selectedCourseId.value)
+  if (!selectedCourseId.value) return
+  await submitEnrollmentForStudent(currentStudentId(), selectedCourseId.value)
 }
 
 async function submitEnrollmentForStudent(studentId: string, courseId: string, recommendationTraceId?: string) {
-  loading.value = true
-  error.value = ''
-  decision.value = null
-
+  loading.value = true; error.value = ''; decision.value = null
   try {
     const resp = await fetch(`${API_BASE()}/api/enroll`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        student_id: studentId,
-        course_id: courseId,
-        recommendation_trace_id: recommendationTraceId || null,
-      }),
+      body: JSON.stringify({ student_id: studentId, course_id: courseId, recommendation_trace_id: recommendationTraceId || null }),
     })
-
     if (!resp.ok) {
       const errData = await resp.json().catch(() => ({}))
-      const msg = errData?.error?.message || errData?.detail || `HTTP ${resp.status}`
-      error.value = `选课失败: ${msg}`
+      error.value = `选课失败: ${errData?.error?.message || errData?.detail || `HTTP ${resp.status}`}`
       loading.value = false
       return
     }
-
     const data = await resp.json()
     decision.value = data
-
-    emit('enrollment-decided', {
-      studentId: data.student_id,
-      courseId: data.course_id,
-      status: data.status,
-      enrollmentTraceId: data.trace_id,
-    })
+    emit('enrollment-decided', { studentId: data.student_id, courseId: data.course_id, status: data.status, enrollmentTraceId: data.trace_id })
   } catch (e: any) {
     error.value = `网络错误: ${e.message}`
   } finally {
@@ -211,149 +191,198 @@ async function submitEnrollmentForStudent(studentId: string, courseId: string, r
   }
 }
 
-function statusLabel(status: string): string {
-  const map: Record<string, string> = {
-    ENROLLED: '选课成功',
-    WAITLISTED: '进入候补',
-    REJECTED: '选课失败',
-  }
-  return map[status] || status
+function statusLabel(s: string): string {
+  const map: Record<string, string> = { ENROLLED: '选课成功', WAITLISTED: '进入候补', REJECTED: '选课失败' }
+  return map[s] || s
+}
+
+function statusTagClass(s: string): string {
+  const map: Record<string, string> = { ENROLLED: 'green', WAITLISTED: 'amber', REJECTED: 'red' }
+  return map[s] || 'grey'
 }
 
 function ruleLabel(rule: string): string {
-  const map: Record<string, string> = {
-    DUPLICATE: '重复选课',
-    PREREQUISITE: '先修课程',
-    TIME_CONFLICT: '时间冲突',
-  }
+  const map: Record<string, string> = { DUPLICATE: '重复选课', PREREQUISITE: '先修课程', TIME_CONFLICT: '时间冲突' }
   return map[rule] || rule
 }
 </script>
 
 <style scoped>
-.enrollment-module {
-  max-width: 700px;
-  margin: 0 auto;
+.module {
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  color: #182230;
+}
+
+h1 { margin: 0 0 20px; font-size: 1.5rem; }
+h3 { margin: 0 0 16px; font-size: 1.1rem; }
+h4 { margin: 20px 0 8px; font-size: 0.95rem; color: #667085; }
+
+.eyebrow {
+  margin-bottom: 6px;
+  color: #4263eb;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Form ─────────────────────────────── */
+.form-card {
   padding: 20px;
-  font-family: system-ui, sans-serif;
-}
-
-h2 { color: #333; margin-bottom: 20px; }
-h3 { margin-top: 20px; color: #555; }
-h4 { color: #666; margin-top: 16px; }
-
-.standalone-controls {
-  background: #f5f5f5;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-}
-
-.form-group {
+  border: 1px solid #dfe3eb;
+  border-radius: 14px;
+  background: #fff;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.form-group label {
-  width: 60px;
-  font-weight: 600;
+.current-student {
+  margin: 0;
+  font-size: 14px;
+  color: #667085;
+}
+.current-student b { color: #182230; }
+
+.form-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.form-row label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-row label span {
+  font-weight: 700;
+  font-size: 13px;
+  color: #344054;
 }
 
 select {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #c8cfdd;
+  border-radius: 9px;
+  font: inherit;
   font-size: 14px;
+  color: #182230;
+  background: #fff;
 }
+select:focus { outline: none; border-color: #4263eb; box-shadow: 0 0 0 3px rgba(66, 99, 235, 0.12); }
 
+/* ── Buttons ───────────────────────────── */
 button {
-  margin-top: 8px;
-  padding: 8px 20px;
-  background: #4a90d9;
-  color: white;
-  border: none;
-  border-radius: 4px;
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: 9px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 14px;
   cursor: pointer;
-  font-size: 14px;
 }
+button:disabled { cursor: wait; opacity: 0.55; }
 
-button:disabled {
-  background: #aaa;
-  cursor: not-allowed;
+.primary {
+  border: 1px solid #3151d3;
+  color: #fff;
+  background: #4263eb;
+  align-self: flex-start;
 }
+.primary:hover:not(:disabled) { background: #3451db; }
 
-.integration-info {
-  background: #e8f4fd;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-}
-
-.error-message {
-  background: #ffe0e0;
-  color: #c00;
-  padding: 10px;
-  border-radius: 4px;
-  margin: 10px 0;
-}
-
-.loading {
-  color: #666;
-  font-style: italic;
-  padding: 10px 0;
-}
-
-.decision-result {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 16px;
+/* ── Banners ───────────────────────────── */
+.banner {
   margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.5;
 }
+.info { color: #175cd3; background: #eff8ff; }
+.trace-hint { display: block; margin-top: 4px; font-size: 13px; color: #667085; }
 
-.summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.field {
-  flex: 1 1 200px;
-}
-
-.label {
-  font-weight: 600;
-  margin-right: 4px;
-}
-
-.pass { color: #2a0; font-weight: 600; }
-.block { color: #c00; font-weight: 600; }
-.status-enrolled { color: #2a0; font-weight: 700; }
-.status-waitlisted { color: #e67e00; font-weight: 700; }
-.status-rejected { color: #c00; font-weight: 700; }
-.waitlist-rank { color: #e67e00; font-weight: 600; }
-.trace-id { font-family: monospace; font-size: 13px; }
-
-.checks-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 8px;
-}
-
-.checks-table th,
-.checks-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
+.error {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  color: #b42318;
+  background: #fee4e2;
   font-size: 14px;
 }
 
-.checks-table th {
-  background: #f0f0f0;
+.loading-msg { margin-top: 16px; color: #667085; font-size: 14px; font-style: italic; }
+
+/* ── Result card ───────────────────────── */
+.result-card {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #dfe3eb;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+.full-width { grid-column: 1 / -1; }
+
+.label { font-size: 13px; color: #667085; }
+.value { font-size: 15px; font-weight: 600; }
+.text-pass { color: #067647; }
+.text-block { color: #b42318; }
+.rank { color: #e67e00; }
+.mono { font-family: "SF Mono", "Cascadia Code", monospace; font-size: 13px; font-weight: 400; }
+
+.status-tag {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+.status-tag.green { color: #067647; background: #dcfae6; }
+.status-tag.amber { color: #7c5700; background: #fff1cc; }
+.status-tag.red   { color: #b42318; background: #fee4e2; }
+
+/* ── Table ─────────────────────────────── */
+table {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #eaecf0;
+  text-align: left;
+}
+
+th {
+  color: #667085;
+  font-size: 0.8rem;
   font-weight: 600;
 }
 
-.check-pass { background: #f0fff0; }
-.check-fail { background: #fff0f0; }
+.row-pass { background: #f6fef9; }
+.row-fail { background: #fff8f8; }
+
+.rule-badge {
+  display: inline-flex;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.badge-pass { color: #067647; background: #dcfae6; }
+.badge-fail { color: #b42318; background: #fee4e2; }
 </style>

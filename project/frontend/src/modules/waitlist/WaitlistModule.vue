@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
+import { courseCatalog } from "../../shared/courseCatalog";
 import TraceTimeline from "./TraceTimeline.vue";
 import type {
   CourseStatusResponse,
@@ -9,6 +10,16 @@ import type {
   WaitlistApi,
   WaitlistStatus,
 } from "./types";
+
+const courseNameMap: Record<string, string> = {};
+for (const c of courseCatalog) {
+  courseNameMap[c.courseId] = c.name;
+}
+
+const DAY_LABELS: Record<string, string> = {
+  MON: "周一", TUE: "周二", WED: "周三", THU: "周四",
+  FRI: "周五", SAT: "周六", SUN: "周日",
+};
 
 
 const props = withDefaults(
@@ -134,7 +145,36 @@ watch(
     <p v-if="error" role="alert" class="error">{{ error }}</p>
     <p v-if="message" role="status" class="message">{{ message }}</p>
 
-    <section v-if="courseStatus" class="overview" aria-label="课程状态">
+    <section v-if="courseStatus" class="course-info" aria-label="课程信息">
+      <div class="info-grid">
+        <div class="info-main">
+          <p class="info-desc">{{ courseStatus.course.description }}</p>
+          <div class="info-meta">
+            <span class="meta-item">
+              <span class="meta-label">时间</span>
+              <span class="meta-value">{{ DAY_LABELS[courseStatus.course.schedule.day] ?? courseStatus.course.schedule.day }} {{ courseStatus.course.schedule.start }}-{{ courseStatus.course.schedule.end }}</span>
+            </span>
+            <span class="meta-item">
+              <span class="meta-label">状态</span>
+              <span :class="['status-tag', courseStatus.course.status === 'OPEN' ? 'tag-open' : 'tag-closed']">
+                {{ courseStatus.course.status === 'OPEN' ? '开课中' : '已停开' }}
+              </span>
+            </span>
+          </div>
+        </div>
+        <div v-if="courseStatus.course.prerequisite_ids.length" class="info-prereqs">
+          <span class="meta-label">先修要求</span>
+          <ul>
+            <li v-for="pid in courseStatus.course.prerequisite_ids" :key="pid">
+              {{ courseNameMap[pid] || pid }}
+              <span class="cid-tag">{{ pid }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section v-if="courseStatus" class="overview" aria-label="课程容量">
       <div>
         <span>已选 / 容量</span>
         <strong>
@@ -309,11 +349,103 @@ h1 {
   text-transform: uppercase;
 }
 
+.course-info {
+  margin: 24px 0 0;
+  padding: 20px;
+  border: 1px solid #dfe3eb;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.info-grid {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.info-main {
+  flex: 2;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.info-desc {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #344054;
+}
+
+.info-meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meta-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #667085;
+}
+
+.meta-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #182230;
+}
+
+.status-tag {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.tag-open { color: #067647; background: #dcfae6; }
+.tag-closed { color: #b42318; background: #fee4e2; }
+
+.info-prereqs {
+  flex: 1;
+  min-width: 180px;
+}
+
+.info-prereqs ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-prereqs li {
+  font-size: 14px;
+  font-weight: 600;
+  color: #182230;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cid-tag {
+  font-size: 12px;
+  font-weight: 400;
+  color: #667085;
+}
+
 .overview {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin: 24px 0;
+  margin: 16px 0;
 }
 
 .overview div,

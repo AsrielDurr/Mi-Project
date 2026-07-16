@@ -116,6 +116,7 @@ class InMemoryStore:
             selected = list(dict.fromkeys(raw.get("selectedCourses", [])))
             self._students[raw["id"]] = StudentProfile(
                 student_id=raw["id"],
+                name=raw.get("name", raw["id"]),
                 goal=raw.get("goal", ""),
                 skills=[],
                 available_times=[raw.get("timePreference", "")]
@@ -158,6 +159,12 @@ class InMemoryStore:
 
     def list_courses(self) -> list[Course]:
         return [course.model_copy(deep=True) for course in self._courses.values()]
+
+    def list_students(self) -> list[dict]:
+        return [
+            {"student_id": sid, "name": s.name}
+            for sid, s in sorted(self._students.items())
+        ]
 
     def get_course(self, course_id: str) -> Course:
         course = self._courses.get(course_id)

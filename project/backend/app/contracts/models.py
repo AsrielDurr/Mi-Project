@@ -1,7 +1,16 @@
 from __future__ import annotations
 
-from enum import StrEnum
+import sys
 from typing import Any, Literal
+
+if sys.version_info >= (3, 11):
+    from enum import StrEnum
+else:
+    from enum import Enum
+
+    class StrEnum(str, Enum):
+        def __str__(self) -> str:
+            return self.value
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -86,6 +95,7 @@ class Course(StrictModel):
 
 class StudentProfile(StrictModel):
     student_id: str
+    name: str = ""
     goal: str
     skills: list[str] = Field(default_factory=list)
     available_times: list[str] = Field(default_factory=list)
@@ -100,6 +110,7 @@ class RecommendationSource(StrEnum):
 
 class Recommendation(StrictModel):
     course_id: str
+    course_name: str = ""
     score: int = Field(ge=0, le=100)
     reason: str
     uncertainty: str
@@ -165,6 +176,7 @@ class EnrollmentDecision(StrictModel):
     trace_id: str
     student_id: str
     course_id: str
+    course_name: str = ""
     rule_decision: RuleDecision
     capacity_available: bool
     status: EnrollmentStatus

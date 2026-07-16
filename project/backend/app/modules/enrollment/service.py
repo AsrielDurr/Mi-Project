@@ -118,6 +118,7 @@ class EnrollmentService:
             "trace_id": trace_id,
             "student_id": student_id,
             "course_id": course_id,
+            "course_name": course.name,
             "rule_decision": eligibility.rule_decision,
             "capacity_available": capacity_available,
             "status": status,

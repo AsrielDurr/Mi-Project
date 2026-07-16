@@ -3,6 +3,10 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,7 +42,8 @@ def create_app(
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")],
-        allow_methods=["GET", "POST"],
+        allow_origin_regex=r"https?://(localhost|127\.0\.0\.1):\d+",
+        allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["Content-Type"],
     )
 
@@ -75,6 +80,18 @@ def create_app(
     app.include_router(create_enrollment_router(services.enrollment, course_ids))
     app.include_router(create_waitlist_router(services.store, services.waitlist))
     app.state.services = services
+
+    @app.get("/api/courses")
+    def list_courses():
+        return [
+            {"course_id": c.course_id, "name": c.name}
+            for c in services.store.list_courses()
+        ]
+
+    @app.get("/api/students")
+    def list_students():
+        return services.store.list_students()
+
     return app
 
 

@@ -53,7 +53,9 @@ class RecommendationService:
         if self._llm is not None:
             for attempt in (1, 2):
                 try:
-                    recommendations = self._call_model(student, courses, course_ids)
+                    recommendations = self._enrich_names(
+                        self._call_model(student, courses, course_ids), courses
+                    )
                     self._trace.append(
                         trace_id,
                         "MODEL_RECOMMENDED",
@@ -138,6 +140,15 @@ class RecommendationService:
         return recommendations
 
     @staticmethod
+    def _enrich_names(
+        recommendations: list[Recommendation], courses: list[Course]
+    ) -> list[Recommendation]:
+        name_map = {c.course_id: c.name for c in courses}
+        for r in recommendations:
+            r.course_name = name_map.get(r.course_id, r.course_id)
+        return recommendations
+
+    @staticmethod
     def _fallback(student: StudentProfile, courses: list[Course]) -> list[Recommendation]:
         keywords = {
             "人工智能": ["人工智能", "机器学习", "计算机视觉"],
@@ -156,6 +167,7 @@ class RecommendationService:
         return [
             Recommendation(
                 course_id=course.course_id,
+                course_name=course.name,
                 score=score(course)[0],
                 reason=score(course)[1],
                 uncertainty="降级推荐未经过MiMo生成，最终资格由规则模块判断",

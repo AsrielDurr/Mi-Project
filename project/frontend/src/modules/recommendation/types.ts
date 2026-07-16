@@ -9,6 +9,7 @@ export interface StudentProfile {
 
 export interface Recommendation {
   course_id: string;
+  course_name: string;
   score: number;
   reason: string;
   uncertainty: string;
