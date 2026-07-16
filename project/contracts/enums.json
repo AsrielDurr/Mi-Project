@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "contract_version": "1.0.0",
+  "RuleDecision": ["PASS", "BLOCK"],
+  "EnrollmentStatus": ["ENROLLED", "WAITLISTED", "REJECTED"],
+  "WaitlistStatus": ["WAITING", "PROMOTED", "SKIPPED"],
+  "RecommendationSource": ["MODEL", "FALLBACK"],
+  "CourseStatus": ["OPEN", "CANCELLED"],
+  "RuleName": ["DUPLICATE", "PREREQUISITE", "TIME_CONFLICT"],
+  "TraceEventType": [
+    "RECOMMENDATION_REQUESTED",
+    "MODEL_SUCCEEDED",
+    "MODEL_FAILED",
+    "FALLBACK_USED",
+    "RULE_CHECKED",
+    "ENROLLMENT_DECIDED",
+    "SEAT_RELEASED",
+    "WAITLIST_RECOMPUTED",
+    "WAITLIST_SKIPPED",
+    "WAITLIST_PROMOTED",
+    "SCENARIO_RESET"
+  ],
+  "ActorType": ["STUDENT", "TEACHER", "SYSTEM", "MODEL"],
+  "ErrorCode": [
+    "VALIDATION_ERROR",
+    "STUDENT_NOT_FOUND",
+    "COURSE_NOT_FOUND",
+    "MODEL_ERROR",
+    "STATE_CONFLICT",
+    "INTERNAL_ERROR"
+  ],
+  "Weekday": ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+}
+
