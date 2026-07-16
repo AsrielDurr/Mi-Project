@@ -1,0 +1,27 @@
+[
+  {
+    "courseId": "AI201",
+    "queue": [
+      {
+        "studentId": "S002",
+        "priority": 1,
+        "applyTime": "2026-07-16T09:00:00"
+      },
+      {
+        "studentId": "S005",
+        "priority": 2,
+        "applyTime": "2026-07-16T09:05:00"
+      }
+    ]
+  },
+  {
+    "courseId": "ALG201",
+    "queue": [
+      {
+        "studentId": "S003",
+        "priority": 1,
+        "applyTime": "2026-07-16T09:10:00"
+      }
+    ]
+  }
+]

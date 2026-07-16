@@ -1,0 +1,14 @@
+[
+  {
+    "type": "EXPAND",
+    "courseId": "AI201",
+    "newCapacity": 35
+  },
+  {
+    "type": "TIME_CHANGE",
+    "courseId": "DB202",
+    "weekday": 4,
+    "start": "14:00",
+    "end": "16:00"
+  }
+]

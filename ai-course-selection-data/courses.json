@@ -1,0 +1,124 @@
+[
+  {
+    "id": "CS101",
+    "name": "Python程序设计",
+    "teacher": "张老师",
+    "weekday": 1,
+    "start": "08:00",
+    "end": "10:00",
+    "capacity": 40,
+    "enrolled": 38,
+    "credits": 3,
+    "category": "Programming",
+    "difficulty": "Easy",
+    "prerequisites": []
+  },
+  {
+    "id": "AI201",
+    "name": "人工智能基础",
+    "teacher": "李老师",
+    "weekday": 2,
+    "start": "10:00",
+    "end": "12:00",
+    "capacity": 30,
+    "enrolled": 30,
+    "credits": 3,
+    "category": "AI",
+    "difficulty": "Medium",
+    "prerequisites": [
+      "CS101"
+    ]
+  },
+  {
+    "id": "DB202",
+    "name": "数据库系统",
+    "teacher": "赵老师",
+    "weekday": 2,
+    "start": "10:00",
+    "end": "12:00",
+    "capacity": 35,
+    "enrolled": 34,
+    "credits": 3,
+    "category": "Database",
+    "difficulty": "Medium",
+    "prerequisites": []
+  },
+  {
+    "id": "ML301",
+    "name": "机器学习",
+    "teacher": "王老师",
+    "weekday": 4,
+    "start": "14:00",
+    "end": "16:00",
+    "capacity": 25,
+    "enrolled": 22,
+    "credits": 4,
+    "category": "AI",
+    "difficulty": "Hard",
+    "prerequisites": [
+      "AI201"
+    ]
+  },
+  {
+    "id": "CV401",
+    "name": "计算机视觉",
+    "teacher": "陈老师",
+    "weekday": 5,
+    "start": "08:00",
+    "end": "10:00",
+    "capacity": 20,
+    "enrolled": 20,
+    "credits": 4,
+    "category": "AI",
+    "difficulty": "Hard",
+    "prerequisites": [
+      "ML301"
+    ]
+  },
+  {
+    "id": "WEB201",
+    "name": "Web开发",
+    "teacher": "刘老师",
+    "weekday": 3,
+    "start": "14:00",
+    "end": "16:00",
+    "capacity": 40,
+    "enrolled": 26,
+    "credits": 3,
+    "category": "Web",
+    "difficulty": "Easy",
+    "prerequisites": [
+      "CS101"
+    ]
+  },
+  {
+    "id": "ALG201",
+    "name": "数据结构",
+    "teacher": "孙老师",
+    "weekday": 1,
+    "start": "10:00",
+    "end": "12:00",
+    "capacity": 45,
+    "enrolled": 45,
+    "credits": 4,
+    "category": "Programming",
+    "difficulty": "Medium",
+    "prerequisites": [
+      "CS101"
+    ]
+  },
+  {
+    "id": "NET301",
+    "name": "计算机网络",
+    "teacher": "周老师",
+    "weekday": 4,
+    "start": "14:00",
+    "end": "16:00",
+    "capacity": 35,
+    "enrolled": 32,
+    "credits": 3,
+    "category": "Network",
+    "difficulty": "Medium",
+    "prerequisites": []
+  }
+]
