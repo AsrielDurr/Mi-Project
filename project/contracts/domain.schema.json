@@ -1,0 +1,302 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/course-selection/domain.schema.json",
+  "title": "AI Course Selection Shared Domain Contract",
+  "contract_version": "1.0.0",
+  "$defs": {
+    "Schedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["day", "start", "end"],
+      "properties": {
+        "day": {"enum": ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]},
+        "start": {"type": "string", "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"},
+        "end": {"type": "string", "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"}
+      }
+    },
+    "StudentProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "student_id",
+        "goal",
+        "skills",
+        "available_times",
+        "completed_course_ids",
+        "enrolled_course_ids"
+      ],
+      "properties": {
+        "student_id": {"type": "string", "minLength": 1},
+        "goal": {"type": "string", "minLength": 1},
+        "skills": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "available_times": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "completed_course_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "enrolled_course_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "Course": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "course_id",
+        "name",
+        "description",
+        "schedule",
+        "capacity",
+        "enrolled_count",
+        "prerequisite_ids",
+        "status"
+      ],
+      "properties": {
+        "course_id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "description": {"type": "string"},
+        "schedule": {"$ref": "#/$defs/Schedule"},
+        "capacity": {"type": "integer", "minimum": 0},
+        "enrolled_count": {"type": "integer", "minimum": 0},
+        "prerequisite_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "status": {"enum": ["OPEN", "CANCELLED"]}
+      }
+    },
+    "Recommendation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["course_id", "score", "reason", "uncertainty"],
+      "properties": {
+        "course_id": {"type": "string", "minLength": 1},
+        "score": {"type": "integer", "minimum": 0, "maximum": 100},
+        "reason": {"type": "string", "minLength": 1},
+        "uncertainty": {"type": "string"}
+      }
+    },
+    "RecommendationResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "source",
+        "model",
+        "prompt_version",
+        "fallback_reason",
+        "recommendations"
+      ],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "source": {"enum": ["MODEL", "FALLBACK"]},
+        "model": {"type": ["string", "null"]},
+        "prompt_version": {"type": "string", "minLength": 1},
+        "fallback_reason": {"type": ["string", "null"]},
+        "recommendations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/Recommendation"}
+        }
+      }
+    },
+    "RuleCheckResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule", "passed", "reason", "related_course_id"],
+      "properties": {
+        "rule": {"enum": ["DUPLICATE", "PREREQUISITE", "TIME_CONFLICT"]},
+        "passed": {"type": "boolean"},
+        "reason": {"type": "string", "minLength": 1},
+        "related_course_id": {"type": ["string", "null"]}
+      }
+    },
+    "EnrollmentDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "student_id",
+        "course_id",
+        "rule_decision",
+        "capacity_available",
+        "status",
+        "waitlist_position",
+        "checks"
+      ],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "student_id": {"type": "string", "minLength": 1},
+        "course_id": {"type": "string", "minLength": 1},
+        "rule_decision": {"enum": ["PASS", "BLOCK"]},
+        "capacity_available": {"type": "boolean"},
+        "status": {"enum": ["ENROLLED", "WAITLISTED", "REJECTED"]},
+        "waitlist_position": {"type": ["integer", "null"], "minimum": 1},
+        "checks": {"type": "array", "items": {"$ref": "#/$defs/RuleCheckResult"}}
+      }
+    },
+    "WaitlistEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "student_id",
+        "course_id",
+        "position",
+        "applied_at",
+        "status",
+        "last_check_reason"
+      ],
+      "properties": {
+        "student_id": {"type": "string", "minLength": 1},
+        "course_id": {"type": "string", "minLength": 1},
+        "position": {"type": "integer", "minimum": 1},
+        "applied_at": {"type": "string", "format": "date-time"},
+        "status": {"enum": ["WAITING", "PROMOTED", "SKIPPED"]},
+        "last_check_reason": {"type": ["string", "null"]}
+      }
+    },
+    "RecomputeCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["student_id", "waitlist_status", "reason"],
+      "properties": {
+        "student_id": {"type": "string", "minLength": 1},
+        "waitlist_status": {"enum": ["PROMOTED", "SKIPPED"]},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "RecomputeResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "course_id",
+        "available_seats_before",
+        "checked",
+        "promoted_student_ids"
+      ],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "course_id": {"type": "string", "minLength": 1},
+        "available_seats_before": {"type": "integer", "minimum": 0},
+        "checked": {"type": "array", "items": {"$ref": "#/$defs/RecomputeCheck"}},
+        "promoted_student_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "CourseStatusResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["course", "available_seats", "enrolled_student_ids", "waitlist"],
+      "properties": {
+        "course": {"$ref": "#/$defs/Course"},
+        "available_seats": {"type": "integer", "minimum": 0},
+        "enrolled_student_ids": {
+          "type": "array",
+          "items": {"type": "string"},
+          "uniqueItems": true
+        },
+        "waitlist": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/WaitlistEntry"}
+        }
+      }
+    },
+    "ReleaseSeatResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trace_id",
+        "course_id",
+        "capacity_before",
+        "capacity_after",
+        "enrolled_count",
+        "available_seats"
+      ],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "course_id": {"type": "string", "minLength": 1},
+        "capacity_before": {"type": "integer", "minimum": 0},
+        "capacity_after": {"type": "integer", "minimum": 0},
+        "enrolled_count": {"type": "integer", "minimum": 0},
+        "available_seats": {"type": "integer", "minimum": 0}
+      }
+    },
+    "TraceEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_id", "trace_id", "event_type", "actor", "payload", "created_at"],
+      "properties": {
+        "event_id": {"type": "string", "minLength": 1},
+        "trace_id": {"type": "string", "minLength": 1},
+        "event_type": {
+          "enum": [
+            "RECOMMENDATION_REQUESTED",
+            "MODEL_SUCCEEDED",
+            "MODEL_FAILED",
+            "FALLBACK_USED",
+            "RULE_CHECKED",
+            "ENROLLMENT_DECIDED",
+            "SEAT_RELEASED",
+            "WAITLIST_RECOMPUTED",
+            "WAITLIST_SKIPPED",
+            "WAITLIST_PROMOTED",
+            "SCENARIO_RESET"
+          ]
+        },
+        "actor": {"enum": ["STUDENT", "TEACHER", "SYSTEM", "MODEL"]},
+        "payload": {"type": "object"},
+        "created_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "TraceResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "events"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "events": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/TraceEvent"}
+        }
+      }
+    },
+    "DemoResetResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_id", "scenario_id", "course_ids", "student_ids"],
+      "properties": {
+        "trace_id": {"type": "string", "minLength": 1},
+        "scenario_id": {"type": "string", "minLength": 1},
+        "course_ids": {
+          "type": "array",
+          "items": {"type": "string"},
+          "uniqueItems": true
+        },
+        "student_ids": {
+          "type": "array",
+          "items": {"type": "string"},
+          "uniqueItems": true
+        }
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["error"],
+      "properties": {
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code", "message", "trace_id"],
+          "properties": {
+            "code": {
+              "enum": [
+                "VALIDATION_ERROR",
+                "STUDENT_NOT_FOUND",
+                "COURSE_NOT_FOUND",
+                "MODEL_ERROR",
+                "STATE_CONFLICT",
+                "INTERNAL_ERROR"
+              ]
+            },
+            "message": {"type": "string", "minLength": 1},
+            "trace_id": {"type": ["string", "null"]}
+          }
+        }
+      }
+    }
+  }
+}

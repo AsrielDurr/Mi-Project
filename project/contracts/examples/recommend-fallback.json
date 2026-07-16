@@ -1,0 +1,16 @@
+{
+  "trace_id": "trace-rec-fallback-001",
+  "source": "FALLBACK",
+  "model": null,
+  "prompt_version": "v1",
+  "fallback_reason": "MiMo API请求超时",
+  "recommendations": [
+    {
+      "course_id": "C003",
+      "score": 70,
+      "reason": "本地关键词匹配到人工智能方向",
+      "uncertainty": "当前结果未经过MiMo生成，推荐质量可能下降"
+    }
+  ]
+}
+

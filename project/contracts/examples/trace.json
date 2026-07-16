@@ -1,0 +1,40 @@
+{
+  "trace_id": "trace-recompute-001",
+  "events": [
+    {
+      "event_id": "event-001",
+      "trace_id": "trace-recompute-001",
+      "event_type": "SEAT_RELEASED",
+      "actor": "TEACHER",
+      "payload": {
+        "course_id": "C003",
+        "capacity_before": 2,
+        "capacity_after": 3
+      },
+      "created_at": "2026-07-16T10:00:00+08:00"
+    },
+    {
+      "event_id": "event-002",
+      "trace_id": "trace-recompute-001",
+      "event_type": "WAITLIST_SKIPPED",
+      "actor": "SYSTEM",
+      "payload": {
+        "student_id": "S001",
+        "reason": "与C002上课时间冲突"
+      },
+      "created_at": "2026-07-16T10:00:01+08:00"
+    },
+    {
+      "event_id": "event-003",
+      "trace_id": "trace-recompute-001",
+      "event_type": "WAITLIST_PROMOTED",
+      "actor": "SYSTEM",
+      "payload": {
+        "student_id": "S002",
+        "course_id": "C003"
+      },
+      "created_at": "2026-07-16T10:00:02+08:00"
+    }
+  ]
+}
+
