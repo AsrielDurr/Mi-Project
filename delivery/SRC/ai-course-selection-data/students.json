@@ -1,0 +1,191 @@
+[
+  {
+    "id": "S001",
+    "name": "学生1",
+    "grade": 2023,
+    "major": "计算机科学",
+    "goal": "人工智能",
+    "timePreference": "上午",
+    "completedCourses": [
+      "CS101"
+    ],
+    "selectedCourses": [
+      "DB202"
+    ]
+  },
+  {
+    "id": "S002",
+    "name": "学生2",
+    "grade": 2023,
+    "major": "计算机科学",
+    "goal": "软件开发",
+    "timePreference": "上午",
+    "completedCourses": [
+      "CS101"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S003",
+    "name": "学生3",
+    "grade": 2023,
+    "major": "计算机科学",
+    "goal": "人工智能",
+    "timePreference": "下午",
+    "completedCourses": [
+      "CS101"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S004",
+    "name": "学生4",
+    "grade": 2023,
+    "major": "计算机科学",
+    "goal": "软件开发",
+    "timePreference": "上午",
+    "completedCourses": [
+      "CS101"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S005",
+    "name": "学生5",
+    "grade": 2023,
+    "major": "计算机科学",
+    "goal": "人工智能",
+    "timePreference": "上午",
+    "completedCourses": [
+      "CS101"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S006",
+    "name": "学生6",
+    "grade": 2023,
+    "major": "计算机科学",
+    "goal": "软件开发",
+    "timePreference": "下午",
+    "completedCourses": [
+      "CS101"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S007",
+    "name": "学生7",
+    "grade": 2023,
+    "major": "计算机科学",
+    "goal": "人工智能",
+    "timePreference": "上午",
+    "completedCourses": [
+      "CS101"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S008",
+    "name": "学生8",
+    "grade": 2022,
+    "major": "计算机科学",
+    "goal": "软件开发",
+    "timePreference": "上午",
+    "completedCourses": [
+      "CS101"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S009",
+    "name": "学生9",
+    "grade": 2022,
+    "major": "计算机科学",
+    "goal": "人工智能",
+    "timePreference": "下午",
+    "completedCourses": [
+      "CS101",
+      "AI201"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S010",
+    "name": "学生10",
+    "grade": 2022,
+    "major": "计算机科学",
+    "goal": "软件开发",
+    "timePreference": "上午",
+    "completedCourses": [
+      "CS101",
+      "AI201"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S011",
+    "name": "学生11",
+    "grade": 2022,
+    "major": "计算机科学",
+    "goal": "人工智能",
+    "timePreference": "上午",
+    "completedCourses": [
+      "CS101",
+      "AI201"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S012",
+    "name": "学生12",
+    "grade": 2022,
+    "major": "计算机科学",
+    "goal": "软件开发",
+    "timePreference": "下午",
+    "completedCourses": [
+      "CS101",
+      "AI201"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S013",
+    "name": "学生13",
+    "grade": 2022,
+    "major": "计算机科学",
+    "goal": "人工智能",
+    "timePreference": "上午",
+    "completedCourses": [
+      "CS101",
+      "AI201"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S014",
+    "name": "学生14",
+    "grade": 2022,
+    "major": "计算机科学",
+    "goal": "软件开发",
+    "timePreference": "上午",
+    "completedCourses": [
+      "CS101",
+      "AI201"
+    ],
+    "selectedCourses": []
+  },
+  {
+    "id": "S015",
+    "name": "学生15",
+    "grade": 2022,
+    "major": "计算机科学",
+    "goal": "人工智能",
+    "timePreference": "下午",
+    "completedCourses": [
+      "CS101",
+      "AI201"
+    ],
+    "selectedCourses": []
+  }
+]

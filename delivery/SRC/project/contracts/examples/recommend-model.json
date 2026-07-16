@@ -1,0 +1,16 @@
+{
+  "trace_id": "trace-rec-model-001",
+  "source": "MODEL",
+  "model": "configured-mimo-model",
+  "prompt_version": "v1",
+  "fallback_reason": null,
+  "recommendations": [
+    {
+      "course_id": "C003",
+      "score": 92,
+      "reason": "符合人工智能学习目标，且学生具备Python基础",
+      "uncertainty": "尚未确认学生的数学基础"
+    }
+  ]
+}
+

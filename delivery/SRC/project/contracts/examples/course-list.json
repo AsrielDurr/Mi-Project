@@ -1,0 +1,10 @@
+[
+  {
+    "course_id": "CS101",
+    "name": "Python程序设计"
+  },
+  {
+    "course_id": "AI201",
+    "name": "人工智能基础"
+  }
+]
