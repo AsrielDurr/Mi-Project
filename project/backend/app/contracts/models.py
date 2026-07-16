@@ -93,6 +93,31 @@ class StudentProfile(StrictModel):
     enrolled_course_ids: list[str] = Field(default_factory=list)
 
 
+class RecommendationSource(StrEnum):
+    MODEL = "MODEL"
+    FALLBACK = "FALLBACK"
+
+
+class Recommendation(StrictModel):
+    course_id: str
+    score: int = Field(ge=0, le=100)
+    reason: str
+    uncertainty: str
+
+
+class RecommendRequest(StrictModel):
+    student: StudentProfile
+
+
+class RecommendationResponse(StrictModel):
+    trace_id: str
+    source: RecommendationSource
+    model: str | None
+    prompt_version: str
+    fallback_reason: str | None
+    recommendations: list[Recommendation] = Field(min_length=1)
+
+
 class WaitlistEntry(StrictModel):
     student_id: str
     course_id: str
